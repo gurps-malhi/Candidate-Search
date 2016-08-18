@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="css/style.css" type="text/css">	
+
+ </head>
+<body>
+
+<div class="blackheader">
+ <a href="#">GOV.UK</a>            
+</div>
+
+<div class="homepage-top">
+<h1>Welcome to GOV.UK</h1>
+<div class="search-box">
+	<input type="text" id="txtTerm" />
+	<input type="button" onclick="SearchTerm()"  value="Search">
+</div>
+</div>
+
+<div class="table" id="tbData">
+   
+	
+</div><!-- table -->
+
+<div class="moredetails" id="dvMoreDetails" style="display:none">
+	
+</div>
+
+
+
+</body>
+
+</html>
+<script type="text/javascript">
+
+	//array store all person objects.
+	var allPersons = new Array();
+	
+	//this is our person object that we will use to build and persist user data
+	function person(identifier, first, last, age, email, profile) {
+		this.idx = identifier;
+		this.firstName = first;
+		this.lastName = last;
+		this.age = age;
+		this.email = email;
+		this.profile = profile;
+	}
+
+	//this function creates the table with the applicants details based on the object properties 
+	function InsertPersonToTable(tableId, objPerson){
+		var tableObject = document.getElementById(tableId);		
+		var rowDiv = document.createElement("div");//created a new div element
+		
+		rowDiv.className = "row";//given the div a class name of row
+		var idPerson = objPerson.idx;
+		rowDiv.innerHTML = '<span class="cell">' + idPerson + '</span>';
+		rowDiv.innerHTML += '<span class="cell">' + objPerson.firstName + " " + objPerson.lastName + '</span>';
+		rowDiv.innerHTML +=	'<span class="cell">' + objPerson.age + '</span>';
+		rowDiv.innerHTML +=	'<span class="cell">' + objPerson.email + '</span>';
+
+		rowDiv.innerHTML +=	'<span class="cell"><button class="action btnblue" onclick="ShowProfileDetails(idPerson)">More</button></span>';
+		
+		tableObject.appendChild(rowDiv);
+		
+		//save person's details passed into array the empty array called allPersons
+		allPersons[objPerson.idx] = objPerson;
+    }
+	
+	//click event for the more button 
+	function ShowProfileDetails(id){
+		document.getElementById('tbData').style = "display:none";//removes the applicants list 
+		var objMore = document.getElementById('dvMoreDetails');		
+		objMore.style = "display:block";
+		objMore.innerHTML = GetPersonDetailsAsHtml(id);	//calls the extra info function 	
+	}
+	
+	function GetPersonDetailsAsHtml(userid){
+		var retVal = '';
+		var person = allPersons[userid];
+		
+		if(person == null){
+			return '<span class="error">User details not found.</span>';
+		}
+		
+		retVal = '<div class="line"><span class="label">Name:</span><span class="details">' + person.firstName + " " + person.lastName + '</span></div>';
+		retVal += '<div class="line"><span class="label">Age:</span><span class="details">' + person.age + '</span></div>';
+		retVal += '<div class="line"><span class="label">Email:</span><span class="details">' + person.email + '</span></div>';
+		retVal += '<div class="line"><span class="label">Personal Profile:</span><span class="details">' + person.profile + '</span></div>';		
+		retVal += '<div class="lastline"><span class="label"><button class="action btnblue" onclick="BackToList()">Back</button></span><span class="details">&nbsp;</span></div>';
+		
+		return retVal;
+	}
+	
+	
+		
+	
+	function BackToList(){
+		document.getElementById('tbData').style = "display:block";
+		var objMore = document.getElementById('dvMoreDetails');		
+		objMore.style = "display:none";
+	}
+	//new table created based on search results this function creates the table 
+	function UpdateTableForSearch(arrResult){
+		var tab = document.getElementById('tbData');
+		tab.innerHTML = '';
+		tab.innerHTML =GetTableHeader();
+		
+		for(var i=0; i < arrResult.length; i++){
+			var identifier = arrResult[i];
+			var person = allPersons[identifier];
+			
+			InsertPersonToTable('tbData', person);			
+		}
+		
+	}
+	
+	function SearchTerm(){
+		
+		var term = document.getElementById('txtTerm').value;
+		var arrFoundPersons = new Array();
+		var count =0;
+		
+		alert(allPersons);
+		for(var person in allPersons){
+		
+
+			var operson = allPersons[person];
+			if(operson.firstName.search(term) > -1 || operson.lastName.search(term) > -1 || operson.idx == term)
+			{
+				arrFoundPersons[count] = operson.idx;
+				count++;
+				
+			}	
+				
+		}
+		
+		if(count < 1){
+		 alert('Person Not Found!');
+		}
+		else{
+			UpdateTableForSearch(arrFoundPersons);		
+		}
+	}
+	function GetTableHeader(){
+		var header = '<div class="row" id="rowHead"><span class="cell thead">Identifier</span>';
+		header += '<span class="cell thead">Full Name</span><span class="cell thead">Age</span>';
+		header += '<span class="cell thead">Email</span><span class="cell thead">More Details</span></div>';
+		
+		return header;
+	}
+	var alicesprofile = 'An adaptable and responsible graduate seeking an entry-level position in public relations which will utilise the organisational and communication skills developed through my involvement with Kent Rag and promotional work during vacations.';
+
+    var joesprofile = 'During my degree I successfully combined my studies with work and other commitments showing myself to be self-motivated, organised and capable of working under pressure. I have a clear, logical mind with a practical approach to problem solving and a drive to see things through to completion. I enjoy working on my own initiative or in a team. In short, I am reliable, trustworthy, hardworking and eager to learn and have a genuine interest in PR.';
+	
+
+	//populate table with data
+	var person1 = new person(10001, 'whiticker', 'malhi', 30, 'Gurps_1@yahoo.com', joesprofile);
+	var person2 = new person(10002, 'alice', 'marley', 44, 'alice.m@yahoo.com', alicesprofile);
+	var person3 = new person(10003, 'bob', 'levine', 63, 'bob.l@blueyonder.co.uk', 'This is a profile for levine.');
+	var person4 = new person(10004, 'gurps', 'forrest', 55, 'gurpsf@yahoo.com', 'This is a profile for gurps.');
+	
+	document.getElementById('tbData').innerHTML = GetTableHeader();
+	InsertPersonToTable('tbData', person1);
+	InsertPersonToTable('tbData', person2);
+	InsertPersonToTable('tbData', person3);
+	InsertPersonToTable('tbData', person4);
+</script>
